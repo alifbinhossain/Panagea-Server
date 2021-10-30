@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require("mongodb");
+const ObjectId = require("mongodb").ObjectId;
 require("dotenv").config();
 
 const app = express();
@@ -23,12 +24,37 @@ async function server() {
 
     const database = client.db("panagea_DB");
     const tourCollection = database.collection("tours");
+    const orderCollection = database.collection("orders");
+
+    //REQUEST TO GET ALL TOURS
+    app.get("/tours", async (req, res) => {
+      const result = await tourCollection.find({}).toArray();
+
+      res.send(result);
+    });
+
+    //REQUEST TO GET ONE SPECIFIC TOUR
+    app.get("/tour/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await tourCollection.findOne(query);
+
+      res.send(result);
+    });
 
     //REQUEST GET FROM HOME TOURS
     app.get("/home/tours", async (req, res) => {
       const query = { category: "popular" };
       const result = await tourCollection.find(query).toArray();
       res.send(result);
+    });
+
+    //REQUEST POST FOR PLACE ORDER
+    app.post("/tour/booking", async (req, res) => {
+      const order = req.body;
+      const result = await orderCollection.insertOne(order);
+
+      res.json(result);
     });
   } finally {
     // await client.close();
