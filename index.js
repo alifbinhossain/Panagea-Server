@@ -49,10 +49,56 @@ async function server() {
       res.send(result);
     });
 
+    //REQUEST TO GET CURRENT USER'S ORDERS
+    app.get("/my_order/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: `${email}` };
+      const result = await orderCollection.find(query).toArray();
+      res.json(result);
+    });
+
+    //REQUEST TO GET ALL ORDERS
+    app.get("/all_orders", async (req, res) => {
+      const result = await orderCollection.find({}).toArray();
+      res.json(result);
+    });
+
+    //REQUEST POST A NEW TOUR
+    app.post("/tours", async (req, res) => {
+      const tour = req.body;
+      const result = await tourCollection.insertOne(tour);
+      res.json(result);
+    });
+
     //REQUEST POST FOR PLACE ORDER
     app.post("/tour/booking", async (req, res) => {
       const order = req.body;
       const result = await orderCollection.insertOne(order);
+
+      res.json(result);
+    });
+
+    //REQUEST TO UPDATE A ORDER STATUS
+    app.put("/all_orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const order = req.body;
+
+      const query = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const update = {
+        $set: {
+          status: order.status,
+        },
+      };
+      const result = await orderCollection.updateOne(query, update, options);
+      res.json(result);
+    });
+
+    //REQUEST TO DELETE A ORDER
+    app.delete("/my_order_list/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await orderCollection.deleteOne(query);
 
       res.json(result);
     });
